@@ -144,7 +144,15 @@ function synthesize_program(model_name::String;
 end
 
 function generate_observations(model_name::String)
+  filenames = map(x -> split(x, ".")[1], filter(x -> occursin(".json", x), readdir(SAVED_JSONS_DIRECTORY)))
+  if model_name in filenames
+    @info "Using saved observations from $(SAVED_JSONS_DIRECTORY)/$(model_name).json for $(model_name)"
+    observations, user_events, grid_size = generate_observations_json(model_name)
+    return observations, user_events, grid_size
+  end
+
   if occursin(":", model_name)
+    @info "Using saved observations from logged_observations for $(model_name)"
     # take from logged dir 
     observation_file_name = "/Users/riadas/Documents/urop/today_temp/CausalDiscovery.jl/logged_observations/$(model_name).jld"
     event_file_name = "/Users/riadas/Documents/urop/today_temp/CausalDiscovery.jl/logged_observations/$(model_name)_EVENTS.txt"
@@ -155,6 +163,8 @@ function generate_observations(model_name::String)
     
     return observations, user_events, 16
   end
+
+  @info "Generating observations for $(model_name) using the julia function (generate_observations_$(model_name))"
 
   if model_name == "grow_ii"
     observations, user_events, grid_size = generate_observations_grow2(nothing)

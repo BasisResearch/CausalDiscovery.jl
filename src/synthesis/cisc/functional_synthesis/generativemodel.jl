@@ -256,6 +256,7 @@ function gen_event_bool_human_prior(object_decomposition, object_id, type_id, us
 
   object_color = ""
   if occursin("addObj", update_rule) && ("color" in map(x -> x[1], filter(t -> t.id == type_id, object_types)[1].custom_fields))
+    @show update_rule
     update_rule_parts = split(update_rule, "\"")
     object_color = strip(update_rule_parts[2])
   end

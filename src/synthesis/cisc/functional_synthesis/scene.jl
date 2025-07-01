@@ -32,7 +32,7 @@ end
 
 """Input: list of objects, where each object is a tuple (shape, color, position)"""
 function render_inf(objects; gridsize=16, transparent=false)
-  background = "white"
+  background = "black"
   image = [RGBA(1.0, 0.0, 0.0, 1.0) for x in 1:gridsize, y in 1:gridsize]
   for object in objects
     center_x = object[3][1]
@@ -162,7 +162,7 @@ mutable struct Obj
 end
 
 function render_from_cells(cells, gridsize) 
-  background = "white"
+  background = "black"
   image = [RGBA(1.0, 0.0, 0.0, 1.0) for x in 1:gridsize, y in 1:gridsize]
   for cell in cells 
     x = cell.position.x 

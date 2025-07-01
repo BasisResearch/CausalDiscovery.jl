@@ -1,5 +1,6 @@
 # const saved_traces_directory = "/Users/riadas/Documents/urop/CausalDiscoveryApp/saved_test_traces_user_study/"
 const saved_traces_directory = "/Users/riadas/Documents/urop/CausalDiscoveryApp/saved_test_traces_abstraction/"
+const SAVED_JSONS_DIRECTORY = "../AutumnBenchmark/observations/"
 
 # function shorten(arr)
 #   indices_to_remove = []
@@ -35,6 +36,44 @@ function generate_observations_interface(model_name, i=1; dir="")
   user_events = observations_dict["user_events"]
   grid_size = observations_dict["grid_size"]
   filter_out_of_bounds_cells(observations, grid_size), user_events, grid_size
+end
+
+function generate_observations_json(model_name; dir="")
+  directory_location = dir == "" ? string(SAVED_JSONS_DIRECTORY, model_name) : string(dir, model_name)
+  file_location = string(directory_location * ".json")
+  observations_dict = JSON.parsefile(file_location)
+  grid_size = observations_dict["grid_size"]
+  observations = observations_dict["observations"]
+  # cells = map((obj_name, obj_render) -> Autumn.AutumnStandardLibrary.Cell(Autumn.AutumnStandardLibrary.Position(obj_render["position"]["x"], obj_render["position"]["y"]), obj_render["color"], 0.8), observations)
+  cells = Vector{Autumn.AutumnStandardLibrary.Cell}[]
+  user_events = []
+  for obs in observations
+    action = obs["action"]
+    type = action["type"]
+    if type == "click"
+      x = action["x"]
+      y = action["y"]
+      push!(user_events, "clicked $(x) $(y)")
+    elseif type == "left"
+      push!(user_events, "left")
+    elseif type == "right"
+      push!(user_events, "right")
+    elseif type == "up"
+      push!(user_events, "up")
+    elseif type == "down"
+      push!(user_events, "down")
+    elseif type == "noop"
+      push!(user_events, nothing)
+    end
+    rendered_output = obs["rendered_output"]
+    cells_for_obs = Autumn.AutumnStandardLibrary.Cell[]
+    for (obj_name, obj) in rendered_output
+      append!(cells_for_obs, map(o -> Autumn.AutumnStandardLibrary.Cell(Autumn.AutumnStandardLibrary.Position(o["position"]["x"], o["position"]["y"]), o["color"], 0.6), obj))
+    end
+    push!(cells, cells_for_obs)
+  end
+  grid_size = observations_dict["grid_size"]
+  filter_out_of_bounds_cells(cells, grid_size), user_events[1:end-1], grid_size
 end
 
 function generate_observations_custom_input(m::Module, user_events)
@@ -1881,4 +1920,3 @@ function generate_observations_pedro(game_name)
 
   observations[1:140], user_events[1:139], [900, 330]
 end
-

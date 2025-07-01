@@ -1,5 +1,5 @@
 import pickle 
-from z3 import * 
+from z3 import Array, IntSort, BitVecSort, BitVecVal, Store, Select, Int, Solver, sat
 from bitstring import BitArray 
 import sys 
 

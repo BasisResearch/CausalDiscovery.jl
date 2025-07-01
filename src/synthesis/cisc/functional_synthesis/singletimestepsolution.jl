@@ -503,7 +503,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
   ## initialize object_types based on first observation frame
   if !pedro 
     if overlapping_cells
-      object_types, _, background, dim = parsescene_autumn_singlecell(observations[1], "white", gridsize)
+      object_types, _, background, dim = parsescene_autumn_singlecell(observations[1], "black", gridsize)
     else
       object_types, _, background, dim = parsescene_autumn(observations[1], gridsize)
     end
@@ -511,7 +511,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
     ## iteratively build object_types through each subsequent observation frame
     for time in 2:length(observations)
       if overlapping_cells
-        object_types, _, _, _ = parsescene_autumn_singlecell_given_types(observations[time], object_types, "white", gridsize)
+        object_types, _, _, _ = parsescene_autumn_singlecell_given_types(observations[time], object_types, "black", gridsize)
       else
         object_types, _, _, _ = parsescene_autumn_given_types(observations[time], object_types, gridsize)
       end
@@ -525,7 +525,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
       larger_types_with_same_color = filter(t -> length(t.shape) > 4 && intersect(colors, t.custom_fields == [] ? [t.color] : t.custom_fields[1][3]) != [], object_types)
       if larger_types_with_same_color != [] 
         square_colors = square_types[1].custom_fields == [] ? [square_types[1].color] : square_types[1].custom_fields[1][3]
-        object_types, _, _, _ = parsescene_autumn_given_types_2x2(observations[end], square_colors, gridsize, "white")
+        object_types, _, _, _ = parsescene_autumn_given_types_2x2(observations[end], square_colors, gridsize, "black")
       else
         square_colors = []
       end
@@ -534,10 +534,10 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
     end   
   
     if overlapping_cells
-      _, objects, _, _ = parsescene_autumn_singlecell_given_types(observations[1], object_types, "white", gridsize)
+      _, objects, _, _ = parsescene_autumn_singlecell_given_types(observations[1], object_types, "black", gridsize)
     else
       if square_colors != []
-        _, objects, _, _ = parsescene_autumn_given_types_2x2(observations[1], square_colors, gridsize, "white")
+        _, objects, _, _ = parsescene_autumn_given_types_2x2(observations[1], square_colors, gridsize, "black")
       else
         _, objects, _, _ = parsescene_autumn_given_types(observations[1], object_types, gridsize)     
       end
@@ -546,7 +546,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
     # println(object_types)  
   else
     # compute union of all colors seen across observations
-    object_types_list = vcat(map(obs -> parsescene_autumn_pedro(obs, gridsize isa Int ? gridsize : gridsize[1], "white")[1], observations)...)
+    object_types_list = vcat(map(obs -> parsescene_autumn_pedro(obs, gridsize isa Int ? gridsize : gridsize[1], "black")[1], observations)...)
     shape = object_types_list[1].shape
     colors = unique(map(t -> t.color, object_types_list))
     object_types = []
@@ -554,7 +554,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
       push!(object_types, ObjType(shape, colors[i], [], i))
     end
 
-    _, objects, _, _ = parsescene_autumn_pedro_given_types(observations[1], object_types, gridsize, "white")
+    _, objects, _, _ = parsescene_autumn_pedro_given_types(observations[1], object_types, gridsize, "black")
   end
 
   # reassign id's to objects so that id's within a type form disjoint intervals 
@@ -577,17 +577,17 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
     # println(object_types)
     if !pedro 
       if overlapping_cells
-        _, next_objects, _, _ = parsescene_autumn_singlecell_given_types(observations[time], deepcopy(object_types), "white", gridsize) # parsescene_autumn_singlecell
+        _, next_objects, _, _ = parsescene_autumn_singlecell_given_types(observations[time], deepcopy(object_types), "black", gridsize) # parsescene_autumn_singlecell
       else
         if square_colors == []
           _, next_objects, _, _ = parsescene_autumn_given_types(observations[time], deepcopy(object_types)) # parsescene_autumn_singlecell
         else
-          _, next_objects, _, _ = parsescene_autumn_given_types_2x2(observations[time], square_colors, gridsize, "white")
+          _, next_objects, _, _ = parsescene_autumn_given_types_2x2(observations[time], square_colors, gridsize, "black")
         end
       end
   
     else
-      _, next_objects, _, _ = parsescene_autumn_pedro_given_types(observations[time], deepcopy(object_types), gridsize, "white")
+      _, next_objects, _, _ = parsescene_autumn_pedro_given_types(observations[time], deepcopy(object_types), gridsize, "black")
     end
 
     # construct mapping between objects and next_objects
@@ -709,7 +709,7 @@ function parse_and_map_objects(observations, gridsize=16; singlecell=false, pedr
   #   end
   # end
 
-  (object_types, object_mapping, "white", gridsize)  
+  (object_types, object_mapping, "black", gridsize)  
 end
 
 function compute_closest_objects(curr_objects, next_objects, object_mapping, time, grid_size, unitSize)

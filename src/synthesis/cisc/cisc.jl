@@ -1,6 +1,6 @@
 import Pkg; Pkg.add("Pickle")
 using Autumn
-using JLD 
+using JLD, JSON 
 using Dates
 include("functional_synthesis/full_synthesis.jl")
 
@@ -53,12 +53,12 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
     mkdir(directory_name)
   end
 
-  directory_name = string("scratch/heuristic_final_results/results_$(date_string)")
+  directory_name = string("scratch/heuristic_final_results/$(model_name)")
   if !isdir(directory_name)
     mkdir(directory_name)
   end
 
-  directory_name = string("scratch/heuristic_final_results/results_$(date_string)/", model_name)
+  directory_name = directory_name * "/results_$(date_string)"
   if !isdir(directory_name)
     mkdir(directory_name)
   end
@@ -101,6 +101,7 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
     observations, user_events, grid_size = observation_tuple
     old_user_events = user_events
   end
+  @info "Length of observations: $(length(observations))"
 
   singlecell_decomp = nothing # decomp_time_single.value 
   multicell_decomp = nothing # decomp_time_multi.value 
@@ -185,6 +186,11 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
       println(io, string("transition_param_", transition_param, "_co_occurring_", co_occurring_param, "_time_based_", time_based, "_z3_option_", z3_option, "_time_based=", time_based, ", singlecell=", singlecell, "\n"))
       println(io, join(sols, "\n\n\n\n"))
     end
+    if length(sols) > 0
+      open(string(subdirectory_name, "/program_strings_", string("transition_param_", transition_param, "_co_occurring_", co_occurring_param, "_time_based_", time_based, "_z3_option_", z3_option, "_singlecell_", singlecell), ".sexp"), "a") do io
+        println(io, join(sols, "\n\n\n\n"))
+      end
+    end
     push!(all_sols, sols...)
     total_time += timed_tuple.time
     
@@ -198,6 +204,15 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
         println(io, "-----------------------------------------")
         println(io, "FINAL TIME")
         println(io, string(total_time))
+        println(io, "-----------------------------------------")
+        println(io, "NAME")
+        println(io, model_name)
+        println(io, "-----------------------------------------")
+        println(io, "TRACE LENGTH")
+        println(io, length(observations))
+        println(io, "-----------------------------------------")
+
+
       end
 
       break
@@ -248,6 +263,11 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
           println(io, string("EXTRA: time_based=", time_based, ", singlecell=", singlecell, "\n"))
           println(io, join(sols, "\n\n\n\n"))
         end
+        if length(sols) > 0
+          open(string(subdirectory_name, "/program_strings.sexp"), "a") do io
+            println(io, join(sols, "\n\n\n\n"))
+          end
+        end
         push!(all_sols, sols...)
 
         non_random_solutions = filter(x -> !occursin("randomPositions", x) && !occursin("uniformChoice", x), all_sols)
@@ -265,6 +285,13 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
           println(io, "-----------------------------------------")
           println(io, "FINAL TIME")
           println(io, string(total_time))
+          println(io, "-----------------------------------------")
+          println(io, "NAME")
+          println(io, model_name)
+          println(io, "-----------------------------------------")
+          println(io, "TRACE LENGTH")
+          println(io, length(observations))
+          println(io, "-----------------------------------------")
         end
 
         break
@@ -279,6 +306,13 @@ function run_model(model_name::String, algorithm, iteration=1, desired_per_matri
       println(io, "-----------------------------------------")
       println(io, "FINAL TIME")
       println(io, string(total_time))
+      println(io, "-----------------------------------------")
+      println(io, "NAME")
+      println(io, model_name)
+      println(io, "-----------------------------------------")
+      println(io, "TRACE LENGTH")
+      println(io, length(observations))
+      println(io, "-----------------------------------------")
     end
 
   end
